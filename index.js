@@ -29,7 +29,7 @@ app.post('/webhook', async (req, res) => {
       try {
         await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
           chat_id: chatId,
-          photo: 'https://your-image-hosting-url/wheatsol.jpg', // Update this URL
+          photo: 'https://raw.githubusercontent.com/Adesopequizzify/earn/main/nh/public/wheatsol.jpg',
           caption: 'Your Time on Telegram is Valuable!\n\nEngage To Unlock Rewards, participate to unlock more $SWHIT 🌾',
           reply_markup: keyboard
         });
@@ -59,3 +59,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
