@@ -5,23 +5,19 @@ const axios = require('axios');
 const app = express();
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
-// Important: Add raw body parsing for Telegram webhooks
-app.use(bodyParser.json({
-  verify: (req, res, buf) => {
-    req.rawBody = buf;
-  }
-}));
+// Use JSON parser for all routes
+app.use(bodyParser.json());
 
-// Change: Move webhook logic to root path
-app.post('/', async (req, res) => {
+// Webhook endpoint
+app.post('/webhook', async (req, res) => {
   try {
-    console.log('Received webhook:', JSON.stringify(req.body)); // Add logging
+    console.log('Received webhook:', JSON.stringify(req.body));
     
     const { message } = req.body;
 
     if (message && message.text === '/start') {
       const chatId = message.chat.id;
-      console.log('Processing /start command for chat:', chatId); // Add logging
+      console.log('Processing /start command for chat:', chatId);
       
       const keyboard = {
         inline_keyboard: [
@@ -33,11 +29,11 @@ app.post('/', async (req, res) => {
       try {
         await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
           chat_id: chatId,
-          photo: 'https://raw.githubusercontent.com/Adesopequizzify/earn/refs/heads/main/nh/public/wheatsol.jpg',
+          photo: 'https://your-image-hosting-url/wheatsol.jpg', // Update this URL
           caption: 'Your Time on Telegram is Valuable!\n\nEngage To Unlock Rewards, participate to unlock more $SWHIT 🌾',
           reply_markup: keyboard
         });
-        console.log('Successfully sent photo message'); // Add logging
+        console.log('Successfully sent photo message');
       } catch (error) {
         console.error('Error sending photo:', error.response?.data || error.message);
         await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -54,15 +50,9 @@ app.post('/', async (req, res) => {
   }
 });
 
-// Add a health check endpoint
+// Health check endpoint
 app.get('/', (req, res) => {
   res.status(200).send('Bot is running');
-});
-
-// Error handling
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 3000;
