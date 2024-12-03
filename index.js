@@ -1,9 +1,19 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
+const admin = require('firebase-admin');
 
 const app = express();
 const BOT_TOKEN = process.env.BOT_TOKEN;
+
+// Initialize Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.cert(firebaseConfig),
+  databaseURL: `https://${firebaseConfig.project_id}.firebaseio.com`
+});
+
+const db = admin.firestore();
 
 // Use JSON parser for all routes
 app.use(bodyParser.json());
@@ -15,10 +25,24 @@ app.post('/webhook', async (req, res) => {
     
     const { message } = req.body;
 
-    if (message && message.text === '/start') {
+    if (message && message.text && message.text.startsWith('/start')) {
       const chatId = message.chat.id;
       console.log('Processing /start command for chat:', chatId);
       
+      // Extract referral code if present
+      const parts = message.text.split(' ');
+      const referralCode = parts.length > 1 ? parts[1] : null;
+      
+      if (referralCode) {
+        console.log('Referral code detected:', referralCode);
+        // Store this referral attempt in Firestore
+        await db.collection('pendingReferrals').add({
+          referralCode,
+          chatId,
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+
       const keyboard = {
         inline_keyboard: [
           [{ text: 'Start', url: 't.me/wheatsol_bot/app' }],
@@ -59,4 +83,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
